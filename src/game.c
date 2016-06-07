@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "render.h"
+#include "player.h"
 
 void error_handler(const char *message)
 {
@@ -15,7 +16,9 @@ int main(int argc, char** argv)
 {
 	struct cc_event event;
 	sprite_t spaceship;
-	float rotation;
+	unsigned long last_time, current_time;
+	char fps_title[256];
+	int frames;
 
 	cc_set_error_handler(error_handler);
 
@@ -29,17 +32,36 @@ int main(int argc, char** argv)
 	spaceship = spawn_sprite(load_vector_from_dfield("assets/spaceship.dfield"), 0, 0, 0, 255);
 
 	scale_sprite(spaceship, 0.1f, 0.1f);
-	move_sprite(spaceship, 0.5f, 0.1f);
 
-	rotation = 0;
+	frames = 0;
+	last_time = cc_get_time_nano_seconds();
 
 	while(cc_poll_window()){
-		event = cc_pop_event();
-		if(event.type == CC_EVENT_DRAW){
-			rotation += 0.1f;
-			rotate_sprite(spaceship, rotation);
-			render();
+		while(cc_pop_event(&event)){
+			if(event.type == CC_EVENT_DRAW){
+				move_sprite(spaceship, get_player_x(), get_player_y());
+				rotate_sprite(spaceship, get_player_rotation());
+				render();
+			}else if(event.type == CC_EVENT_PRESS_KEY){
+				player_handle_keyboard_press(event.data.key_code);
+			}else if(event.type == CC_EVENT_RELEASE_KEY){
+				player_handle_keyboard_release(event.data.key_code);
+			}
 		}
+
+		update_player();
+
+		current_time = cc_get_time_nano_seconds();
+		frames++;
+		if(current_time - last_time >= (unsigned long)1.0e9){
+			sprintf(fps_title, "Small Game: %d fps", frames);
+			cc_set_window_title(fps_title);
+
+			frames = 0;
+			last_time += (unsigned long)1.0e09;
+		}
+
+		cc_sleep_micro_seconds(5000);
 	}
 
 	cc_destroy_opengl_context();
