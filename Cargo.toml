@@ -1,0 +1,15 @@
+[package]
+name = "rocket-game"
+version = "0.1.0"
+description = "A small asteroids like game"
+readme = "README.md"
+keywords = ["game", "asteroids", "vector"]
+authors = ["Thomas Versteeg <thomasversteeg@gmx.com>"]
+repository = "https://github.com/tversteeg/rocket-game.git"
+homepage = "https://github.com/tversteeg/rocket-game"
+
+[dependencies]
+piston = "0.35"
+piston2d-graphics = "0.24"
+pistoncore-glutin_window = "0.43"
+piston2d-opengl_graphics = "0.50"
