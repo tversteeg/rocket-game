@@ -1,8 +1,6 @@
-use piston::input::*;
-use opengl_graphics::{ GlGraphics, OpenGL };
+use piston_window::*;
 
 pub struct Game {
-    gl: GlGraphics,
     rotation: f64,
 
     x: f64,
@@ -15,9 +13,8 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(opengl: OpenGL) -> Self {
+    pub fn new() -> Self {
         Game {
-            gl: GlGraphics::new(opengl),
             rotation: 0.0,
 
             x: 0.0,
@@ -83,24 +80,7 @@ impl Game {
         }
     }
 
-    pub fn draw(&mut self, args: &RenderArgs) {
-        use graphics::*;
-
-        const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
-        const RED:   [f32; 4] = [1.0, 0.0, 0.0, 1.0];
-
-        let square = rectangle::square(0.0, 0.0, 50.0);
-        let rotation = self.rotation;
-        let (x, y) = (self.x, self.y);
-
-        self.gl.draw(args.viewport(), |c, gl| {
-            clear(GREEN, gl);
-
-            let transform = c.transform.trans(x, y)
-                                       .rot_rad(rotation)
-                                       .trans(-25.0, -25.0);
-
-            rectangle(RED, square, transform, gl);
-        });
+    pub fn draw(&mut self, context: context::Context, graphics: &mut G2d) {
+        clear([1.0; 4], graphics);
     }
 }

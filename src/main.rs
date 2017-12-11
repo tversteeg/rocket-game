@@ -1,46 +1,37 @@
-extern crate piston;
-extern crate graphics;
-extern crate glutin_window;
-extern crate opengl_graphics;
+extern crate piston_window;
+extern crate find_folder;
 
 mod game;
 
-use piston::window::WindowSettings;
-use piston::event_loop::*;
-use piston::input::*;
-use glutin_window::GlutinWindow as Window;
-use opengl_graphics::OpenGL;
+use piston_window::*;
+
+fn load_image(window: &mut PistonWindow, folder: &str, file: &str) -> Result<G2dTexture, &'static str> {
+    let asset_folder = match find_folder::Search::ParentsThenKids(3, 3).for_folder(folder) {
+        Ok(f) => f,
+        Err(find_folder::Error::IO(_)) => return Err("IO error on trying to find asset folder"),
+        Err(find_folder::Error::NotFound) => return Err("Could not find asset folder")
+    };
+
+    let asset_path = asset_folder.join(file);
+    
+    match Texture::from_path(&mut window.factory, &asset_path, Flip::None, &TextureSettings::new()) {
+        Ok(t) => Ok(t),
+        Err(_) => Err("Something went wrong opening the asset")
+    }
+}
 
 fn main() {
-    let opengl = OpenGL::V3_2;
-
-    let mut window: Window = WindowSettings::new(
-            "rocket-game",
-            [600, 600]
-        )
-        .opengl(opengl)
+    let mut window: PistonWindow = WindowSettings::new("rocket-game", [600, 600])
         .exit_on_esc(true)
         .build()
         .unwrap();
 
-    let mut game = game::Game::new(opengl);
+    let texture = load_image(&mut window, "assets", "rocket.png").unwrap();
+    let mut game = game::Game::new();
 
-    let mut events = Events::new(EventSettings::new());
-    while let Some(e) = events.next(&mut window) {
-        if let Some(r) = e.render_args() {
-            game.draw(&r);
-        }
-
-        if let Some(u) = e.update_args() {
-            game.update(&u);
-        }
-
-        if let Some(b) = e.press_args() {
-            game.press_key(b);
-        }
-
-        if let Some(b) = e.release_args() {
-            game.release_key(b);
-        }
+    while let Some(event) = window.next() {
+        window.draw_2d(&event, |context, graphics| {
+            game.draw(context, graphics);
+        });
     }
 }

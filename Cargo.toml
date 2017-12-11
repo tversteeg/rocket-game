@@ -9,7 +9,5 @@ repository = "https://github.com/tversteeg/rocket-game.git"
 homepage = "https://github.com/tversteeg/rocket-game"
 
 [dependencies]
-piston = "0.35"
-piston2d-graphics = "0.24"
-pistoncore-glutin_window = "0.43"
-piston2d-opengl_graphics = "0.50"
+piston_window = "0.74"
+find_folder = "0.3"
