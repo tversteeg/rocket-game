@@ -25,5 +25,7 @@ fn convert_image_to_dfield(name: &str) {
 }
 
 fn main() {
+    std::fs::create_dir_all("resources").unwrap();
+
     convert_image_to_dfield("rocket.png");
 }
