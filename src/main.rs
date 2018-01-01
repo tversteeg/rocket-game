@@ -1,37 +1,79 @@
-extern crate piston_window;
-extern crate find_folder;
+extern crate ggez;
 
-mod game;
+use ggez::conf;
+use ggez::event;
+use ggez::{Context, GameResult};
+use ggez::graphics;
+use ggez::graphics::Color;
+use ggez::timer;
+use std::env;
+use std::path;
 
-use piston_window::*;
+struct MainState {
+    a: i32,
+    direction: i32,
+    image: graphics::Image,
+}
 
-fn load_image(window: &mut PistonWindow, folder: &str, file: &str) -> Result<G2dTexture, &'static str> {
-    let asset_folder = match find_folder::Search::ParentsThenKids(3, 3).for_folder(folder) {
-        Ok(f) => f,
-        Err(find_folder::Error::IO(_)) => return Err("IO error on trying to find asset folder"),
-        Err(find_folder::Error::NotFound) => return Err("Could not find asset folder")
-    };
+impl MainState {
+    fn new(context: &mut Context) -> GameResult<MainState> {
+        context.print_resource_stats();
 
-    let asset_path = asset_folder.join(file);
-    
-    match Texture::from_path(&mut window.factory, &asset_path, Flip::None, &TextureSettings::new()) {
-        Ok(t) => Ok(t),
-        Err(_) => Err("Something went wrong opening the asset")
+        let image = graphics::Image::new(context, "/rocket.png").unwrap();
+
+        let state = MainState {
+            a: 0,
+            direction: 1,
+            image: image
+        };
+
+        Ok(state)
     }
 }
 
-fn main() {
-    let mut window: PistonWindow = WindowSettings::new("rocket-game", [600, 600])
-        .exit_on_esc(true)
-        .build()
-        .unwrap();
+impl event::EventHandler for MainState {
+    fn update(&mut self, context: &mut Context) -> GameResult<()> {
+        const DESIRED_FPS: u32 = 60;
 
-    let texture = load_image(&mut window, "assets", "rocket.png").unwrap();
-    let mut game = game::Game::new();
+        while timer::check_update_time(context, DESIRED_FPS) {
+            // Update game ..
+        }
 
-    while let Some(event) = window.next() {
-        window.draw_2d(&event, |context, graphics| {
-            game.draw(context, graphics);
-        });
+        Ok(())
+    }
+
+    fn draw(&mut self, context: &mut Context) -> GameResult<()> {
+        graphics::set_color(context, Color::from((128, 128, 128, 255)))?;
+        graphics::clear(context);
+
+        let draw_param = graphics::DrawParam {
+            dest: graphics::Point2::new(100.0, 100.0),
+            offset: graphics::Point2::new(0.5, 0.5),
+            ..Default::default()
+        };
+        graphics::draw_ex(context, &self.image, draw_param)?;
+
+        graphics::present(context);
+
+        timer::yield_now();
+        Ok(())
+    }
+}
+
+pub fn main() {
+    let config = conf::Conf::new();
+
+    let context = &mut Context::load_from_conf("rocket-game", "ggez", config).unwrap();
+
+    if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
+        let mut path = path::PathBuf::from(manifest_dir);
+        path.push("resources");
+        
+        context.filesystem.mount(&path, true);
+    }
+
+    let state = &mut MainState::new(context).unwrap();
+    if let Err(e) = event::run(context, state) {
+        println!("Error encountered: {}", e);
     }
 }
