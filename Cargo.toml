@@ -7,7 +7,12 @@ keywords = ["game", "asteroids", "vector"]
 authors = ["Thomas Versteeg <thomasversteeg@gmx.com>"]
 repository = "https://github.com/tversteeg/rocket-game.git"
 homepage = "https://github.com/tversteeg/rocket-game"
+build = "build.rs"
 
 [dependencies]
 ggez = "0.4"
 gfx = "0.16"
+
+[build-dependencies]
+image = "0.18"
+distance-field = "0.1"

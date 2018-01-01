@@ -70,7 +70,7 @@ impl event::EventHandler for MainState {
             let draw_param = DrawParam {
                 dest: Point2::new(300.0, 300.0),
                 offset: Point2::new(0.5, 0.5),
-                scale: Point2::new(10.0, 10.0),
+                scale: Point2::new(1.0, 3.0),
                 ..Default::default()
             };
             graphics::draw_ex(context, &self.image, draw_param)?;

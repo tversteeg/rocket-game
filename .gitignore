@@ -32,3 +32,9 @@
 *.dSYM/
 /target/
 **/*.rs.bk
+
+# Resources folder because everything there should be generated
+resources/
+
+# Cargo files
+Cargo.lock
