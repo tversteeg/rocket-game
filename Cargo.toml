@@ -10,3 +10,4 @@ homepage = "https://github.com/tversteeg/rocket-game"
 
 [dependencies]
 ggez = "0.4"
+gfx = "0.16"
