@@ -19,7 +19,7 @@ travis-ci = {repository = "tversteeg/rocket-game"}
 
 [dependencies]
 ggez = "0.4"
-gfx = "0.16"
+gfx = "0.17"
 
 [build-dependencies]
 image = "0.18"
