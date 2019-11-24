@@ -15,7 +15,7 @@ layout (std140) uniform VectorShaderConsts {
 
 void main() {
 	float dfield_offset = texture(t_Texture, v_Uv).r;
-	float alpha_mask = clamp((dfield_offset - 0.22) * 200, 0.0, 1.0);
+	float dfield = 1.0 - clamp((dfield_offset - 0.22) * 200, 0.0, 1.0);
 
-	Target0 = vec4(dfield_offset, dfield_offset, dfield_offset, alpha_mask);
+	Target0 = vec4(dfield, dfield, dfield, 1.0 - dfield);
 }

@@ -18,9 +18,9 @@ build = "build.rs"
 travis-ci = {repository = "tversteeg/rocket-game"}
 
 [dependencies]
-ggez = "0.4"
-gfx = "0.17"
+ggez = "0.5.1"
+gfx = "0.18.2"
 
 [build-dependencies]
-image = "0.18"
-distance-field = "0.1"
+image = "0.22.3"
+distance-field = "0.1.7"

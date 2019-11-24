@@ -1,7 +1,6 @@
-extern crate image;
 extern crate distance_field;
+extern crate image;
 
-use std::fs::File;
 use std::path::Path;
 
 use distance_field::DistanceFieldExt;
@@ -19,9 +18,9 @@ fn convert_image_to_dfield(name: &str) {
         ..Default::default()
     });
 
-    let ref mut fout = File::create(format!("resources/{}", name)).unwrap();
-
-    image::ImageLuma8(outbuf).save(fout, image::PNG).unwrap();
+    image::ImageLuma8(outbuf)
+        .save(format!("resources/{}", name))
+        .unwrap();
 }
 
 fn main() {
