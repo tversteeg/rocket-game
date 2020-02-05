@@ -1,4 +1,5 @@
 use specs::{Component, DenseVecStorage, Join, Read, ReadStorage, System, WriteStorage};
+use specs_blit::Sprite;
 use std::time::Duration;
 
 #[derive(Default)]
@@ -40,6 +41,17 @@ impl<'a> System<'a> for VelocitySystem {
         for (vel, pos) in (&vel, &mut pos).join() {
             pos.x += vel.x * dt;
             pos.y += vel.y * dt;
+        }
+    }
+}
+
+pub struct SpritePositionSystem;
+impl<'a> System<'a> for SpritePositionSystem {
+    type SystemData = (ReadStorage<'a, Position>, WriteStorage<'a, Sprite>);
+
+    fn run(&mut self, (pos, mut sprite): Self::SystemData) {
+        for (pos, sprite) in (&pos, &mut sprite).join() {
+            sprite.set_pos(pos.x as i32, pos.y as i32);
         }
     }
 }

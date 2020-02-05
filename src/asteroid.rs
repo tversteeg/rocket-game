@@ -56,8 +56,8 @@ pub fn spawn_asteroids(
                 y: rng.gen_range(0, height) as f64,
             })
             .with(Velocity {
-                x: rng.gen_range(-1.0, 1.0),
-                y: rng.gen_range(-1.0, 1.0),
+                x: rng.gen_range(-10.0, 10.0),
+                y: rng.gen_range(-10.0, 10.0),
             })
             .with(Sprite::new(sprite))
             .build();

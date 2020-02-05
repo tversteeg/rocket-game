@@ -31,12 +31,13 @@ fn main() -> Result<()> {
     // Add the deltatime to calculate the physics
     world.insert(DeltaTime::new(1.0 / 60.0));
 
-    // Spawn 10 asteroids
+    // Spawn the initial asteroids
     spawn_asteroids(&mut world, 10, WIDTH, HEIGHT)?;
 
     // Setup the dispatcher with the blit system
     let mut dispatcher = DispatcherBuilder::new()
         .with(VelocitySystem, "velocity", &[])
+        .with(SpritePositionSystem, "spritepos", &["velocity"])
         .with_thread_local(RenderSystem)
         .build();
 
