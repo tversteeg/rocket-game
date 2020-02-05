@@ -1,97 +1,52 @@
-#[macro_use]
-extern crate gfx;
-extern crate ggez;
+use anyhow::Result;
+use specs::prelude::*;
+use specs_blit::{PixelBuffer, RenderSystem, Sprite};
+use std::{thread::sleep, time::Duration};
 
-use ggez::graphics::*;
-use ggez::mint::*;
-use ggez::*;
-use std::env;
-use std::path;
+mod asteroid;
+mod physics;
+mod rocket;
 
-gfx_defines! {
-    constant VectorShaderConsts {
-        ignore: f32 = "ignore",
-    }
-}
+const WIDTH: usize = 600;
+const HEIGHT: usize = 400;
 
-const DFIELD_VERTEX_SHADER_SOURCE: &[u8] = include_bytes!("dfield.vert");
-const DFIELD_FRAGMENT_SHADER_SOURCE: &[u8] = include_bytes!("dfield.frag");
+fn main() -> Result<()> {
+    // Setup the ECS system
+    let mut world = World::new();
 
-struct MainState {
-    image: Image,
+    // Load the sprite rendering component
+    world.register::<Sprite>();
 
-    shader_consts: VectorShaderConsts,
-    shader: Shader<VectorShaderConsts>,
-}
+    // Add the pixel buffer as a resource so it can be accessed from the RenderSystem later
+    world.insert(PixelBuffer::new(WIDTH, HEIGHT));
 
-impl MainState {
-    fn new(context: &mut Context) -> GameResult<MainState> {
-        let mut image = Image::new(context, "/rocket.png").unwrap();
-        image.set_filter(FilterMode::Linear);
+    // Setup the dispatcher with the blit system
+    let mut dispatcher = DispatcherBuilder::new()
+        .with_thread_local(RenderSystem)
+        .build();
 
-        let shader_consts = VectorShaderConsts { ignore: 0.0 };
-
-        let shader = Shader::from_u8(
-            context,
-            DFIELD_VERTEX_SHADER_SOURCE,
-            DFIELD_FRAGMENT_SHADER_SOURCE,
-            shader_consts,
-            "VectorShaderConsts",
-            None,
-        )
-        .unwrap();
-
-        let state = MainState {
-            image,
-            shader_consts,
-            shader,
-        };
-
-        Ok(state)
-    }
-}
-
-impl event::EventHandler for MainState {
-    fn update(&mut self, _context: &mut Context) -> GameResult<()> {
-        Ok(())
-    }
-
-    fn draw(&mut self, context: &mut Context) -> GameResult<()> {
-        graphics::set_default_filter(context, FilterMode::Linear);
-        graphics::clear(context, Color::from((255, 255, 255, 255)));
-        {
-            let _lock = graphics::use_shader(context, &self.shader);
-            self.shader.send(context, self.shader_consts)?;
-
-            let draw_param = DrawParam {
-                dest: Point2 { x: 300.0, y: 300.0 },
-                offset: Point2 { x: 0.5, y: 0.5 },
-                scale: Vector2 { x: 1.0, y: 3.0 },
-                ..Default::default()
-            };
-            graphics::draw(context, &self.image, draw_param)?;
-        }
-
-        graphics::present(context)?;
-
-        Ok(())
-    }
-}
-
-pub fn main() -> GameResult {
-    let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
-        let mut path = path::PathBuf::from(manifest_dir);
-        path.push("resources");
-
-        path
-    } else {
-        path::PathBuf::from("./resources")
+    // Setup the window
+    let window_options = minifb::WindowOptions {
+        scale: minifb::Scale::X2,
+        ..minifb::WindowOptions::default()
     };
+    let mut window = minifb::Window::new("Rocket Game", WIDTH, HEIGHT, window_options)?;
 
-    let (context, event_loop) = &mut ContextBuilder::new("rocket-game", "tversteeg")
-        .add_resource_path(resource_dir)
-        .build()?;
+    while window.is_open() && !window.is_key_down(minifb::Key::Escape) {
+        // Update specs
+        dispatcher.dispatch(&world);
 
-    let state = &mut MainState::new(context).unwrap();
-    event::run(context, event_loop, state)
+        // Add/remove entities added in dispatch through `LazyUpdate`
+        world.maintain();
+
+        // Get the pixel buffer resource to render it
+        let buffer = world.read_resource::<PixelBuffer>();
+        // Render the pixel buffer
+        window.update_with_buffer(&buffer.pixels(), buffer.width(), buffer.height())?;
+
+        // Don't use 100% CPU
+        sleep(Duration::from_millis(12));
+    }
+
+    Ok(())
 }
