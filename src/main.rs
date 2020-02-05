@@ -1,11 +1,14 @@
-use anyhow::Result;
-use specs::prelude::*;
-use specs_blit::{PixelBuffer, RenderSystem, Sprite};
-use std::{thread::sleep, time::Duration};
-
 mod asteroid;
 mod physics;
 mod rocket;
+
+use crate::{asteroid::*, physics::*};
+
+use anyhow::Result;
+use specs::prelude::*;
+use specs_blit::{PixelBuffer, RenderSystem, Sprite};
+
+use std::{thread::sleep, time::Duration};
 
 const WIDTH: usize = 600;
 const HEIGHT: usize = 400;
@@ -14,14 +17,26 @@ fn main() -> Result<()> {
     // Setup the ECS system
     let mut world = World::new();
 
+    // Load the game components
+    world.register::<Position>();
+    world.register::<Velocity>();
+    world.register::<Asteroid>();
+
     // Load the sprite rendering component
     world.register::<Sprite>();
 
     // Add the pixel buffer as a resource so it can be accessed from the RenderSystem later
     world.insert(PixelBuffer::new(WIDTH, HEIGHT));
 
+    // Add the deltatime to calculate the physics
+    world.insert(DeltaTime::new(1.0 / 60.0));
+
+    // Spawn 10 asteroids
+    spawn_asteroids(&mut world, 10, WIDTH, HEIGHT)?;
+
     // Setup the dispatcher with the blit system
     let mut dispatcher = DispatcherBuilder::new()
+        .with(VelocitySystem, "velocity", &[])
         .with_thread_local(RenderSystem)
         .build();
 

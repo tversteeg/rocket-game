@@ -26,7 +26,7 @@ pub struct Velocity {
     pub y: f64,
 }
 
-struct VelocitySystem;
+pub struct VelocitySystem;
 impl<'a> System<'a> for VelocitySystem {
     type SystemData = (
         Read<'a, DeltaTime>,
