@@ -1,13 +1,16 @@
 # rocket-game
 
-A small arcade game with vector rendering
+A small procedurally generated arcade game
 
-[![Build Status](https://travis-ci.org/tversteeg/rocket-game.svg?branch=master)](https://travis-ci.org/tversteeg/rocket-game) [![Cargo](https://img.shields.io/crates/v/rocket-game.svg)](https://crates.io/crates/rocket-game) [![License: GPL-3.0](https://img.shields.io/crates/l/rocket-game.svg)](#license) [![Downloads](https://img.shields.io/crates/d/rocket-game.svg)](#downloads)
+<a href="https://actions-badge.atrox.dev/tversteeg/rocket-game/goto"><img src="https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Ftversteeg%2Frocket-game%2Fbadge&style=flat" alt="Build Status"/></a>
+[![Cargo](https://img.shields.io/crates/v/rocket-game.svg)](https://crates.io/crates/rocket-game) [![License: GPL-3.0](https://img.shields.io/crates/l/rocket-game.svg)](#license) [![Downloads](https://img.shields.io/crates/d/rocket-game.svg)](#downloads)
 
 # Building
 
 ## Linux
 
-To build on Linux you need the `asound2` and `sdl2` development libraries:
+To build on Linux you need the `xorg` development libraries and `cmake`:
 
-    apt install libasound2-dev libsdl2-dev
+```bash
+sudo apt install xorg-dev cmake
+```
