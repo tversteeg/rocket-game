@@ -2,7 +2,7 @@ mod asteroid;
 mod physics;
 mod rocket;
 
-use crate::{asteroid::*, physics::*};
+use crate::{asteroid::*, physics::*, rocket::*};
 
 use anyhow::Result;
 use specs::prelude::*;
@@ -21,6 +21,7 @@ fn main() -> Result<()> {
     world.register::<Position>();
     world.register::<Velocity>();
     world.register::<Asteroid>();
+    world.register::<Rocket>();
 
     // Load the sprite rendering component
     world.register::<Sprite>();
@@ -49,6 +50,12 @@ fn main() -> Result<()> {
     let mut window = minifb::Window::new("Rocket Game", WIDTH, HEIGHT, window_options)?;
 
     while window.is_open() && !window.is_key_down(minifb::Key::Escape) {
+        {
+            // Clear the buffer
+            let mut buffer = world.write_resource::<PixelBuffer>();
+            buffer.clear(0);
+        }
+
         // Update specs
         dispatcher.dispatch(&world);
 

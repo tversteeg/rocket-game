@@ -41,7 +41,7 @@ pub fn spawn_asteroids(
             let buf = BlitBuffer::from_buffer(
                 &gen_sprite(&asteroid_mask, asteroid_mask_size.0, options),
                 (asteroid_mask_size.0 * 2) as i32,
-                Color::from_u32(0xFFFFFFFF),
+                Color::from_u32(0xFF_FF_FF_FF),
             );
 
             specs_blit::load(buf)?
