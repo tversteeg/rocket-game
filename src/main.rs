@@ -1,6 +1,7 @@
 mod asteroid;
 mod physics;
 mod rocket;
+mod sprite;
 
 use crate::{asteroid::*, physics::*, rocket::*};
 

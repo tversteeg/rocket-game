@@ -1,13 +1,11 @@
 use crate::physics::*;
 
+use crate::sprite::generate;
 use anyhow::Result;
 use rand::prelude::*;
 use specs::{prelude::*, Component, DenseVecStorage};
-use specs_blit::{
-    blit::{BlitBuffer, Color},
-    Sprite,
-};
-use sprite_gen::{gen_sprite, MaskValue, Options};
+use specs_blit::Sprite;
+use sprite_gen::{MaskValue::*, Options};
 
 #[derive(Component, Debug, Default)]
 pub struct Asteroid {}
@@ -18,7 +16,7 @@ pub fn spawn_asteroids(
     screen_width: usize,
     screen_height: usize,
 ) -> Result<()> {
-    let (width, height, options) = (
+    let (width, _height, options) = (
         11,
         11,
         Options {
@@ -32,146 +30,23 @@ pub fn spawn_asteroids(
         },
     );
     let asteroid_mask = [
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Solid,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Solid,
-        MaskValue::Solid,
-        MaskValue::Solid,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Solid,
-        MaskValue::Solid,
-        MaskValue::Solid,
-        MaskValue::Solid,
-        MaskValue::Solid,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Solid,
-        MaskValue::Solid,
-        MaskValue::Solid,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Solid,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Body1,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
-        MaskValue::Empty,
+        Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty,
+        Empty, Empty, Body1, Body1, Body1, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Body1,
+        Body1, Body1, Body1, Body1, Empty, Empty, Empty, Empty, Empty, Body1, Body1, Body1, Solid,
+        Body1, Body1, Body1, Empty, Empty, Empty, Body1, Body1, Body1, Solid, Solid, Solid, Body1,
+        Body1, Body1, Empty, Empty, Body1, Body1, Solid, Solid, Solid, Solid, Solid, Body1, Body1,
+        Empty, Empty, Body1, Body1, Body1, Solid, Solid, Solid, Body1, Body1, Body1, Empty, Empty,
+        Empty, Body1, Body1, Body1, Solid, Body1, Body1, Body1, Empty, Empty, Empty, Empty, Empty,
+        Body1, Body1, Body1, Body1, Body1, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Body1,
+        Body1, Body1, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty, Empty,
+        Empty, Empty, Empty, Empty,
     ];
 
     let mut rng = rand::thread_rng();
 
     for _ in 0..amount {
         // Generate the sprite
-        let sprite = {
-            let buf = BlitBuffer::from_buffer(
-                &gen_sprite(&asteroid_mask, width, options)
-                    .into_iter()
-                    // Invert the colors
-                    .map(|p| p ^ 0xFF_FF_FF_FF)
-                    .collect::<Vec<_>>(),
-                width as i32,
-                Color::from_u32(0xFF_FF_FF_FF),
-            );
-
-            specs_blit::load(buf)?
-        };
+        let sprite = generate(width, options, &asteroid_mask)?;
 
         // Add the entity to the ECS system
         world
