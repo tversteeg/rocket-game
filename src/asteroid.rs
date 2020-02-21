@@ -7,7 +7,7 @@ use specs_blit::{
     blit::{BlitBuffer, Color},
     Sprite,
 };
-use sprite_gen::{gen_sprite, Options};
+use sprite_gen::{gen_sprite, MaskValue, Options};
 
 #[derive(Component, Debug, Default)]
 pub struct Asteroid {}
@@ -15,23 +15,145 @@ pub struct Asteroid {}
 pub fn spawn_asteroids(
     world: &mut World,
     amount: usize,
-    width: usize,
-    height: usize,
+    screen_width: usize,
+    screen_height: usize,
 ) -> Result<()> {
+    let (width, height, options) = (
+        11,
+        11,
+        Options {
+            mirror_x: false,
+            mirror_y: false,
+            colored: true,
+            edge_brightness: 0.3,
+            color_variations: 0.2,
+            brightness_noise: 0.3,
+            saturation: 0.5,
+        },
+    );
     let asteroid_mask = [
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, -1, 0, 0, 0, 1, 1, -1, 0, 0, 0, 1, 1,
-        -1, 0, 0, 1, 1, 1, -1, 0, 1, 1, 1, 2, 2, 0, 1, 1, 1, 2, 2, 0, 1, 1, 1, 2, 2, 0, 1, 1, 1, 1,
-        -1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Solid,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Solid,
+        MaskValue::Solid,
+        MaskValue::Solid,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Solid,
+        MaskValue::Solid,
+        MaskValue::Solid,
+        MaskValue::Solid,
+        MaskValue::Solid,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Solid,
+        MaskValue::Solid,
+        MaskValue::Solid,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Solid,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Body1,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
+        MaskValue::Empty,
     ];
-    let asteroid_mask_size = (6, 12);
-
-    // Asteroids are mirrored on both axes
-    let options = Options {
-        mirror_x: true,
-        mirror_y: true,
-        colored: true,
-        ..Options::default()
-    };
 
     let mut rng = rand::thread_rng();
 
@@ -39,8 +161,12 @@ pub fn spawn_asteroids(
         // Generate the sprite
         let sprite = {
             let buf = BlitBuffer::from_buffer(
-                &gen_sprite(&asteroid_mask, asteroid_mask_size.0, options),
-                (asteroid_mask_size.0 * 2) as i32,
+                &gen_sprite(&asteroid_mask, width, options)
+                    .into_iter()
+                    // Invert the colors
+                    .map(|p| p ^ 0xFF_FF_FF_FF)
+                    .collect::<Vec<_>>(),
+                width as i32,
                 Color::from_u32(0xFF_FF_FF_FF),
             );
 
@@ -52,8 +178,8 @@ pub fn spawn_asteroids(
             .create_entity()
             .with(Asteroid::default())
             .with(Position {
-                x: rng.gen_range(0, width) as f64,
-                y: rng.gen_range(0, height) as f64,
+                x: rng.gen_range(0, screen_width) as f64,
+                y: rng.gen_range(0, screen_height) as f64,
             })
             .with(Velocity {
                 x: rng.gen_range(-10.0, 10.0),
