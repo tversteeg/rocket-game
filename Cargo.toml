@@ -21,6 +21,6 @@ anyhow = "1.0.26"
 minifb = "0.15.3"
 specs = { version = "0.16.1", features = ["specs-derive"] }
 specs-blit = "0.1.5"
-sprite-gen = "0.1.6"
+sprite-gen = "0.1.8"
 rand = "0.7.3"
 

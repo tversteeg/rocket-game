@@ -36,6 +36,9 @@ fn main() -> Result<()> {
     // Spawn the initial asteroids
     spawn_asteroids(&mut world, 10, WIDTH, HEIGHT)?;
 
+    // Spawn the player rocket
+    spawn_rocket(&mut world, WIDTH / 2, HEIGHT / 2)?;
+
     // Setup the dispatcher with the blit system
     let mut dispatcher = DispatcherBuilder::new()
         .with(VelocitySystem, "velocity", &[])

@@ -1,5 +1,4 @@
 use crate::physics::*;
-
 use crate::sprite::generate;
 use anyhow::Result;
 use rand::prelude::*;
