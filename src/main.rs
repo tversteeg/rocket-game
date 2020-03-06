@@ -34,7 +34,10 @@ fn main() -> Result<()> {
     world.insert(DeltaTime::new(1.0 / 60.0));
 
     // Spawn the initial asteroids
-    spawn_asteroids(&mut world, 10, WIDTH, HEIGHT)?;
+    spawn_asteroids(&mut world, 20, WIDTH, HEIGHT)?;
+
+    // Spawn the initial rockets
+    spawn_small_rockets(&mut world, 20, WIDTH, HEIGHT)?;
 
     // Spawn the player rocket
     spawn_rocket(&mut world, WIDTH / 2, HEIGHT / 2)?;
