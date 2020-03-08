@@ -45,7 +45,7 @@ pub fn spawn_asteroids(
 
     for _ in 0..amount {
         // Generate the sprite
-        let sprite = generate(width, options, &asteroid_mask)?;
+        let sprite = generate(width, options, &asteroid_mask, 8)?;
 
         // Add the entity to the ECS system
         world

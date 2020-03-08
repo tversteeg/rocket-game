@@ -1,6 +1,6 @@
 use specs::{Component, DenseVecStorage, Join, Read, ReadStorage, System, WriteStorage};
 use specs_blit::Sprite;
-use std::time::Duration;
+use std::{f64::consts::PI, time::Duration};
 
 #[derive(Default)]
 pub struct DeltaTime(pub Duration);
@@ -14,6 +14,9 @@ impl DeltaTime {
         self.0.as_secs() as f64 + self.0.subsec_nanos() as f64 * 1e-9
     }
 }
+
+#[derive(Component, Debug, Default)]
+pub struct RotationFollowsVelocity;
 
 #[derive(Component, Debug, Default)]
 pub struct Position {
@@ -52,6 +55,21 @@ impl<'a> System<'a> for SpritePositionSystem {
     fn run(&mut self, (pos, mut sprite): Self::SystemData) {
         for (pos, sprite) in (&pos, &mut sprite).join() {
             sprite.set_pos(pos.x as i32, pos.y as i32);
+        }
+    }
+}
+
+pub struct RotationSystem;
+impl<'a> System<'a> for RotationSystem {
+    type SystemData = (
+        ReadStorage<'a, Velocity>,
+        WriteStorage<'a, Sprite>,
+        ReadStorage<'a, RotationFollowsVelocity>,
+    );
+
+    fn run(&mut self, (vel, mut sprite, follow_rotation): Self::SystemData) {
+        for (vel, sprite, _) in (&vel, &mut sprite, &follow_rotation).join() {
+            sprite.set_rot(((f64::atan2(vel.y, vel.x) * 180.0 / PI) % 360.0 + 90.0) as u16)
         }
     }
 }

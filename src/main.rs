@@ -21,6 +21,7 @@ fn main() -> Result<()> {
     // Load the game components
     world.register::<Position>();
     world.register::<Velocity>();
+    world.register::<RotationFollowsVelocity>();
     world.register::<Asteroid>();
     world.register::<Rocket>();
 
@@ -45,6 +46,7 @@ fn main() -> Result<()> {
     // Setup the dispatcher with the blit system
     let mut dispatcher = DispatcherBuilder::new()
         .with(VelocitySystem, "velocity", &[])
+        .with(RotationSystem, "rotation", &["velocity"])
         .with(SpritePositionSystem, "spritepos", &["velocity"])
         .with_thread_local(RenderSystem)
         .build();

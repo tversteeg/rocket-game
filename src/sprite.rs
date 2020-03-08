@@ -6,7 +6,12 @@ use specs_blit::{
 use sprite_gen::{gen_sprite, MaskValue, Options};
 
 /// Generate a random sprite from a mask and return it as a blit buffer.
-pub fn generate(width: usize, options: Options, mask: &[MaskValue]) -> Result<SpriteRef> {
+pub fn generate(
+    width: usize,
+    options: Options,
+    mask: &[MaskValue],
+    rotations: u16,
+) -> Result<SpriteRef> {
     let buffer_width = if options.mirror_x { width * 2 } else { width };
 
     let buf = BlitBuffer::from_buffer(
@@ -19,5 +24,5 @@ pub fn generate(width: usize, options: Options, mask: &[MaskValue]) -> Result<Sp
         Color::from_u32(0),
     );
 
-    specs_blit::load(buf)
+    specs_blit::load(buf, rotations)
 }

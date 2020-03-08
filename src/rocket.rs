@@ -41,7 +41,7 @@ pub fn spawn_small_rockets(
 
     for _ in 0..amount {
         // Generate the sprite
-        let sprite = generate(width, options, &rocket_mask)?;
+        let sprite = generate(width, options, &rocket_mask, 16)?;
 
         // Add the entity to the ECS system
         world
@@ -55,6 +55,7 @@ pub fn spawn_small_rockets(
                 x: rng.gen_range(-10.0, 10.0),
                 y: rng.gen_range(-10.0, 10.0),
             })
+            .with(RotationFollowsVelocity)
             .with(Sprite::new(sprite))
             .build();
     }
@@ -101,7 +102,7 @@ pub fn spawn_rocket(world: &mut World, x: usize, y: usize) -> Result<()> {
     ];
 
     // Generate the sprite
-    let sprite = generate(width, options, &rocket_mask)?;
+    let sprite = generate(width, options, &rocket_mask, 16)?;
 
     // Add the entity to the ECS system
     world
@@ -112,6 +113,7 @@ pub fn spawn_rocket(world: &mut World, x: usize, y: usize) -> Result<()> {
             y: y as f64,
         })
         .with(Velocity { x: 0.0, y: 0.0 })
+        .with(RotationFollowsVelocity)
         .with(Sprite::new(sprite))
         .build();
 
