@@ -1,5 +1,4 @@
-use crate::physics::*;
-use crate::sprite::generate;
+use crate::{physics::*, sprite::generate, user::KeyboardControlled};
 use anyhow::Result;
 use rand::prelude::*;
 use specs::{prelude::*, Component, DenseVecStorage};
@@ -102,7 +101,7 @@ pub fn spawn_rocket(world: &mut World, x: usize, y: usize) -> Result<()> {
     ];
 
     // Generate the sprite
-    let sprite = generate(width, options, &rocket_mask, 16)?;
+    let sprite = generate(width, options, &rocket_mask, 32)?;
 
     // Add the entity to the ECS system
     world
@@ -114,6 +113,7 @@ pub fn spawn_rocket(world: &mut World, x: usize, y: usize) -> Result<()> {
         })
         .with(Velocity { x: 0.0, y: 0.0 })
         .with(RotationFollowsVelocity)
+        .with(KeyboardControlled)
         .with(Sprite::new(sprite))
         .build();
 

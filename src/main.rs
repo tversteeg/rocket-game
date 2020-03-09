@@ -2,14 +2,16 @@ mod asteroid;
 mod physics;
 mod rocket;
 mod sprite;
+mod user;
 
-use crate::{asteroid::*, physics::*, rocket::*};
+use crate::{asteroid::*, physics::*, rocket::*, user::*};
 
 use anyhow::Result;
+use minifb::Key;
 use specs::prelude::*;
 use specs_blit::{PixelBuffer, RenderSystem, Sprite};
 
-use std::{thread::sleep, time::Duration};
+use std::time::Duration;
 
 const WIDTH: usize = 600;
 const HEIGHT: usize = 400;
@@ -24,6 +26,7 @@ fn main() -> Result<()> {
     world.register::<RotationFollowsVelocity>();
     world.register::<Asteroid>();
     world.register::<Rocket>();
+    world.register::<KeyboardControlled>();
 
     // Load the sprite rendering component
     world.register::<Sprite>();
@@ -33,6 +36,9 @@ fn main() -> Result<()> {
 
     // Add the deltatime to calculate the physics
     world.insert(DeltaTime::new(1.0 / 60.0));
+
+    // Add the minifb keys
+    world.insert(vec![true; 4]);
 
     // Spawn the initial asteroids
     spawn_asteroids(&mut world, 20, WIDTH, HEIGHT)?;
@@ -46,6 +52,7 @@ fn main() -> Result<()> {
     // Setup the dispatcher with the blit system
     let mut dispatcher = DispatcherBuilder::new()
         .with(VelocitySystem, "velocity", &[])
+        .with(KeyboardSystem, "keyboard", &["velocity"])
         .with(RotationSystem, "rotation", &["velocity"])
         .with(SpritePositionSystem, "spritepos", &["velocity"])
         .with_thread_local(RenderSystem)
@@ -58,12 +65,31 @@ fn main() -> Result<()> {
     };
     let mut window = minifb::Window::new("Rocket Game", WIDTH, HEIGHT, window_options)?;
 
+    // Limit to max ~60 fps update rate
+    window.limit_update_rate(Some(Duration::from_micros(16600)));
+
     while window.is_open() && !window.is_key_down(minifb::Key::Escape) {
         {
             // Clear the buffer
             let mut buffer = world.write_resource::<PixelBuffer>();
             buffer.clear(0);
         }
+
+        window.get_keys().map(|keys| {
+            let mut resource = world.write_resource::<Vec<bool>>();
+            resource.clear();
+            resource.resize(4, false);
+            for t in keys {
+                match t {
+                    // Qwerty or Dvorak
+                    Key::W | Key::Comma => resource[0] = true,
+                    Key::A => resource[1] = true,
+                    Key::S | Key::O => resource[2] = true,
+                    Key::D | Key::E => resource[3] = true,
+                    _ => (),
+                }
+            }
+        });
 
         // Update specs
         dispatcher.dispatch(&world);
@@ -75,9 +101,6 @@ fn main() -> Result<()> {
         let buffer = world.read_resource::<PixelBuffer>();
         // Render the pixel buffer
         window.update_with_buffer(&buffer.pixels(), buffer.width(), buffer.height())?;
-
-        // Don't use 100% CPU
-        sleep(Duration::from_millis(12));
     }
 
     Ok(())

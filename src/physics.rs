@@ -69,8 +69,10 @@ impl<'a> System<'a> for RotationSystem {
 
     fn run(&mut self, (vel, mut sprite, follow_rotation): Self::SystemData) {
         for (vel, sprite, _) in (&vel, &mut sprite, &follow_rotation).join() {
+            // Point the rotation towards the velocity
             let rotation_in_degrees = f64::atan2(vel.y, vel.x) * 180.0 / PI;
-            sprite.set_rot(((rotation_in_degrees + 360.0) + 90.0) as i16)
+            // Offset it by 90 degrees because all sprites point up by default
+            sprite.set_rot((rotation_in_degrees + 90.0) as i16)
         }
     }
 }
