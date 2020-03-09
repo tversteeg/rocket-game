@@ -75,7 +75,7 @@ fn main() -> Result<()> {
             buffer.clear(0);
         }
 
-        window.get_keys().map(|keys| {
+        if let Some(keys) = window.get_keys() {
             let mut resource = world.write_resource::<Vec<bool>>();
             resource.clear();
             resource.resize(4, false);
@@ -89,7 +89,7 @@ fn main() -> Result<()> {
                     _ => (),
                 }
             }
-        });
+        }
 
         // Update specs
         dispatcher.dispatch(&world);
