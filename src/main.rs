@@ -23,6 +23,7 @@ fn main() -> Result<()> {
     // Load the game components
     world.register::<Position>();
     world.register::<Velocity>();
+    world.register::<CartesianVelocity>();
     world.register::<RotationFollowsVelocity>();
     world.register::<Asteroid>();
     world.register::<Rocket>();
@@ -51,10 +52,20 @@ fn main() -> Result<()> {
 
     // Setup the dispatcher with the blit system
     let mut dispatcher = DispatcherBuilder::new()
+        .with(CartesianVelocitySystem, "cartesian_velocity", &[])
         .with(VelocitySystem, "velocity", &[])
-        .with(KeyboardSystem, "keyboard", &["velocity"])
+        .with(KeyboardSystem, "keyboard", &["cartesian_velocity"])
         .with(RotationSystem, "rotation", &["velocity"])
-        .with(SpritePositionSystem, "spritepos", &["velocity"])
+        .with(
+            CartesianRotationSystem,
+            "cartesian_rotation",
+            &["cartesian_velocity"],
+        )
+        .with(
+            SpritePositionSystem,
+            "spritepos",
+            &["velocity", "cartesian_velocity"],
+        )
         .with_thread_local(RenderSystem)
         .build();
 
