@@ -1,3 +1,4 @@
+use crate::user::Camera;
 use specs::{Component, DenseVecStorage, Join, Read, ReadStorage, System, WriteStorage};
 use specs_blit::Sprite;
 use std::{f64::consts::PI, time::Duration};
@@ -74,11 +75,16 @@ impl<'a> System<'a> for CartesianVelocitySystem {
 
 pub struct SpritePositionSystem;
 impl<'a> System<'a> for SpritePositionSystem {
-    type SystemData = (ReadStorage<'a, Position>, WriteStorage<'a, Sprite>);
+    type SystemData = (
+        Read<'a, Camera>,
+        ReadStorage<'a, Position>,
+        WriteStorage<'a, Sprite>,
+    );
 
-    fn run(&mut self, (pos, mut sprite): Self::SystemData) {
+    fn run(&mut self, (camera, pos, mut sprite): Self::SystemData) {
         for (pos, sprite) in (&pos, &mut sprite).join() {
-            sprite.set_pos(pos.x as i32, pos.y as i32);
+            let (x, y) = camera.map(&pos);
+            sprite.set_pos(x as i32, y as i32);
         }
     }
 }

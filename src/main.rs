@@ -27,7 +27,7 @@ fn main() -> Result<()> {
     world.register::<RotationFollowsVelocity>();
     world.register::<Asteroid>();
     world.register::<Rocket>();
-    world.register::<KeyboardControlled>();
+    world.register::<MovesWithCamera>();
 
     // Load the sprite rendering component
     world.register::<Sprite>();
@@ -38,8 +38,8 @@ fn main() -> Result<()> {
     // Add the deltatime to calculate the physics
     world.insert(DeltaTime::new(1.0 / 60.0));
 
-    // Add the minifb keys
-    world.insert(vec![true; 4]);
+    // Add the camera
+    world.insert(Camera::new());
 
     // Spawn the initial asteroids
     spawn_asteroids(&mut world, 20, WIDTH, HEIGHT)?;
@@ -50,11 +50,12 @@ fn main() -> Result<()> {
     // Spawn the player rocket
     spawn_rocket(&mut world, WIDTH / 2, HEIGHT / 2)?;
 
+    let mut keys_pressed = vec![false; 4];
+
     // Setup the dispatcher with the blit system
     let mut dispatcher = DispatcherBuilder::new()
         .with(CartesianVelocitySystem, "cartesian_velocity", &[])
         .with(VelocitySystem, "velocity", &[])
-        .with(KeyboardSystem, "keyboard", &["cartesian_velocity"])
         .with(RotationSystem, "rotation", &["velocity"])
         .with(
             CartesianRotationSystem,
@@ -86,20 +87,27 @@ fn main() -> Result<()> {
             buffer.clear(0);
         }
 
+        // Get which keys are pressed
         if let Some(keys) = window.get_keys() {
-            let mut resource = world.write_resource::<Vec<bool>>();
-            resource.clear();
-            resource.resize(4, false);
+            // Set all keys to false
+            keys_pressed.iter_mut().for_each(|k| *k = false);
             for t in keys {
                 match t {
                     // Qwerty or Dvorak
-                    Key::W | Key::Comma => resource[0] = true,
-                    Key::A => resource[1] = true,
-                    Key::S | Key::O => resource[2] = true,
-                    Key::D | Key::E => resource[3] = true,
+                    Key::W | Key::Comma => keys_pressed[0] = true,
+                    Key::A => keys_pressed[1] = true,
+                    Key::S | Key::O => keys_pressed[2] = true,
+                    Key::D | Key::E => keys_pressed[3] = true,
                     _ => (),
                 }
             }
+        }
+
+        {
+            // Update the camera
+            let mut camera = world.write_resource::<Camera>();
+            camera.handle_keyboard(&keys_pressed);
+            camera.update(world.read_resource::<DeltaTime>().to_seconds());
         }
 
         // Update specs
