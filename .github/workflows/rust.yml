@@ -1,5 +1,3 @@
-
-
 name: CI
 on:
   push:
@@ -46,22 +44,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-targets --all-features -- -D clippy::all
-
-  # Run a security audit on dependencies
-  cargo_audit:
-    name: Cargo Audit [Security]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-      - run: cargo install --force cargo-audit
-      - run: cargo generate-lockfile
-      - uses: actions-rs/cargo@v1
-        with:
-          command: audit
 
   # Ensure that the project could be successfully compiled
   cargo_check:
@@ -137,7 +119,6 @@ jobs:
       matrix:
         target:
           - x86_64-unknown-linux-gnu
-          - x86_64-unknown-linux-musl
           - x86_64-apple-darwin
           - x86_64-pc-windows-msvc
         include:
@@ -162,13 +143,9 @@ jobs:
           override: true
           target: ${{ matrix.target }}
         
-      - name: Install musl tools
+      - name: Install dependencies
         if: matrix.os == 'ubuntu'
         run: sudo apt-get install -y xorg-dev
-
-      - name: Install musl tools
-        if: matrix.target == 'x86_64-unknown-linux-musl'
-        run: sudo apt-get install -y musl-tools
 
       - name: Build target
         uses: actions-rs/cargo@v1
