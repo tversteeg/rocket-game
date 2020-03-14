@@ -46,14 +46,14 @@ pub fn spawn_small_rockets(
         world
             .create_entity()
             .with(Rocket::default())
-            .with(Position {
-                x: rng.gen_range(0, screen_width) as f64,
-                y: rng.gen_range(0, screen_height) as f64,
-            })
-            .with(Velocity {
-                x: rng.gen_range(-10.0, 10.0),
-                y: rng.gen_range(-10.0, 10.0),
-            })
+            .with(Position::new(
+                rng.gen_range(0, screen_width) as f64,
+                rng.gen_range(0, screen_height) as f64,
+            ))
+            .with(Velocity::new(
+                rng.gen_range(-10.0, 10.0),
+                rng.gen_range(-10.0, 10.0),
+            ))
             .with(RotationFollowsVelocity)
             .with(MovesWithCamera)
             .with(Sprite::new(sprite))
@@ -108,10 +108,7 @@ pub fn spawn_rocket(world: &mut World, x: usize, y: usize) -> Result<()> {
     world
         .create_entity()
         .with(Rocket::default())
-        .with(Position {
-            x: x as f64,
-            y: y as f64,
-        })
+        .with(Position::new(x as f64, y as f64))
         .with(CartesianVelocity {
             speed: 0.0,
             rot: 0.0,

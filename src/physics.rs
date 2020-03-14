@@ -1,7 +1,10 @@
 use crate::user::Camera;
+use derive_deref::Deref;
 use specs::{Component, DenseVecStorage, Join, Read, ReadStorage, System, WriteStorage};
 use specs_blit::Sprite;
 use std::{f64::consts::PI, time::Duration};
+
+type Vec2 = vek::Vec2<f64>;
 
 #[derive(Default)]
 pub struct DeltaTime(pub Duration);
@@ -19,16 +22,22 @@ impl DeltaTime {
 #[derive(Component, Debug, Default)]
 pub struct RotationFollowsVelocity;
 
-#[derive(Component, Debug, Default)]
-pub struct Position {
-    pub x: f64,
-    pub y: f64,
+#[derive(Component, Debug, Default, Deref)]
+pub struct Position(Vec2);
+
+impl Position {
+    pub fn new(x: f64, y: f64) -> Self {
+        Self(Vec2::new(x, y))
+    }
 }
 
-#[derive(Component, Debug, Default)]
-pub struct Velocity {
-    pub x: f64,
-    pub y: f64,
+#[derive(Component, Debug, Default, Deref)]
+pub struct Velocity(Vec2);
+
+impl Velocity {
+    pub fn new(x: f64, y: f64) -> Self {
+        Self(Vec2::new(x, y))
+    }
 }
 
 #[derive(Component, Debug, Default)]
@@ -49,8 +58,7 @@ impl<'a> System<'a> for VelocitySystem {
         let dt = dt.to_seconds();
 
         for (vel, pos) in (&vel, &mut pos).join() {
-            pos.x += vel.x * dt;
-            pos.y += vel.y * dt;
+            pos.0 += vel.0 * dt;
         }
     }
 }
@@ -67,8 +75,8 @@ impl<'a> System<'a> for CartesianVelocitySystem {
         let dt = dt.to_seconds();
 
         for (vel, pos) in (&vel, &mut pos).join() {
-            pos.x += vel.rot.sin() * vel.speed * dt;
-            pos.y += vel.rot.cos() * vel.speed * dt;
+            pos.0.x += vel.rot.sin() * vel.speed * dt;
+            pos.0.y += vel.rot.cos() * vel.speed * dt;
         }
     }
 }
@@ -83,8 +91,8 @@ impl<'a> System<'a> for SpritePositionSystem {
 
     fn run(&mut self, (camera, pos, mut sprite): Self::SystemData) {
         for (pos, sprite) in (&pos, &mut sprite).join() {
-            let (x, y) = camera.map(&pos);
-            sprite.set_pos(x as i32, y as i32);
+            let offset = camera.map(&pos);
+            sprite.set_pos(offset.x as i32, offset.y as i32);
         }
     }
 }

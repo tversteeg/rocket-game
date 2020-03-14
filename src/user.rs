@@ -1,6 +1,8 @@
 use crate::physics::Position;
 use specs::{Component, DenseVecStorage};
 
+type Vec2 = vek::Vec2<f64>;
+
 const SPEED: f64 = 0.5;
 const SPEED_BOOST: f64 = 30.0;
 const MAX_SPEED: f64 = 50.0;
@@ -8,34 +10,42 @@ const ROTATION: f64 = 0.02;
 
 #[derive(Debug, Default)]
 pub struct Camera {
-    /// X position.
-    x: f64,
-    /// Y position.
-    y: f64,
-    /// Rotation.
+    /// Absolute position.
+    pos: Vec2,
+    /// Camera center.
+    pivot: Vec2,
     rot: f64,
+    /// Calculated sin that only needs to be calculated once.
+    rot_sin: f64,
+    /// Calculated cos that only needs to be calculated once.
+    rot_cos: f64,
     /// Speed.
     speed: f64,
 }
 
 impl Camera {
     /// Instantiate a new camera object.
-    pub fn new() -> Self {
+    pub fn new(pivot: Vec2) -> Self {
         Self {
-            rot: 90.0,
+            pivot,
             ..Default::default()
         }
     }
 
     /// Map normal coordinates to relative camera coordinates.
-    pub fn map(&self, pos: &Position) -> (f64, f64) {
-        (pos.x - self.x, pos.y - self.y)
+    pub fn map(&self, pos: &Position) -> Vec2 {
+        let dx = pos.x - self.pos.x;
+        let dy = pos.y - self.pos.y;
+
+        Vec2::new(self.rot.sin() * dx, self.rot.cos() * dy)
     }
 
     /// Update the position according to the velocity and speed.
     pub fn update(&mut self, dt: f64) {
-        self.x += self.rot.sin() * self.speed * dt;
-        self.y += self.rot.cos() * self.speed * dt;
+        self.pos += Vec2::new(
+            self.rot.sin() * self.speed * dt,
+            self.rot.cos() * self.speed * dt,
+        );
     }
 
     /// Move by keyboard.
@@ -54,12 +64,20 @@ impl Camera {
         }
         if keys[1] {
             // A
-            self.rot += ROTATION;
+            self.rotate(ROTATION);
         }
         if keys[3] {
             // D
-            self.rot -= ROTATION;
+            self.rotate(-ROTATION);
         }
+    }
+
+    /// Rotate the camera.
+    fn rotate(&mut self, offset: f64) {
+        self.rot += offset;
+
+        self.rot_sin = self.rot.sin();
+        self.rot_cos = self.rot.cos();
     }
 }
 

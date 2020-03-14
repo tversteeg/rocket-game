@@ -51,14 +51,14 @@ pub fn spawn_asteroids(
         world
             .create_entity()
             .with(Asteroid::default())
-            .with(Position {
-                x: rng.gen_range(0, screen_width) as f64,
-                y: rng.gen_range(0, screen_height) as f64,
-            })
-            .with(Velocity {
-                x: rng.gen_range(-10.0, 10.0),
-                y: rng.gen_range(-10.0, 10.0),
-            })
+            .with(Position::new(
+                rng.gen_range(0, screen_width) as f64,
+                rng.gen_range(0, screen_height) as f64,
+            ))
+            .with(Velocity::new(
+                rng.gen_range(-10.0, 10.0),
+                rng.gen_range(-10.0, 10.0),
+            ))
             .with(Sprite::new(sprite))
             .build();
     }

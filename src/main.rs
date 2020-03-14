@@ -13,6 +13,8 @@ use specs_blit::{PixelBuffer, RenderSystem, Sprite};
 
 use std::time::Duration;
 
+type Vec2 = vek::Vec2<f64>;
+
 const WIDTH: usize = 600;
 const HEIGHT: usize = 400;
 
@@ -39,7 +41,10 @@ fn main() -> Result<()> {
     world.insert(DeltaTime::new(1.0 / 60.0));
 
     // Add the camera
-    world.insert(Camera::new());
+    world.insert(Camera::new(Vec2::new(
+        WIDTH as f64 / 2.0,
+        HEIGHT as f64 / 2.0,
+    )));
 
     // Spawn the initial asteroids
     spawn_asteroids(&mut world, 20, WIDTH, HEIGHT)?;
