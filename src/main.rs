@@ -36,11 +36,15 @@ fn main() -> Result<()> {
     // Load the sprite rendering component
     world.register::<Sprite>();
 
-    // Add the pixel buffer as a resource so it can be accessed from the RenderSystem later
+    // Add the pixel buffer as a resource so it can be accessed from the RenderSystem later, to be
+    // updated every frame
     world.insert(PixelBuffer::new(WIDTH, HEIGHT));
 
-    // Add the deltatime to calculate the physics
+    // Add the deltatime to calculate the physics, to be updated every frame
     world.insert(DeltaTime::new(1.0 / 60.0));
+
+    // Add the current keyboard state, to be updated every frame
+    world.insert(InputState::new());
 
     // Add the camera
     world.insert(Camera::new(Vec2::new(
@@ -56,8 +60,6 @@ fn main() -> Result<()> {
 
     // Spawn the player rocket
     spawn_rocket(&mut world, WIDTH / 2, HEIGHT / 2)?;
-
-    let mut keys_pressed = vec![false; 4];
 
     // Setup the dispatcher with the blit system
     let mut dispatcher = DispatcherBuilder::new()
@@ -101,15 +103,16 @@ fn main() -> Result<()> {
 
         // Get which keys are pressed
         if let Some(keys) = window.get_keys() {
-            // Set all keys to false
-            keys_pressed.iter_mut().for_each(|k| *k = false);
+            let mut input = world.write_resource::<InputState>();
+            input.reset();
+
             for t in keys {
                 match t {
                     // Qwerty or Dvorak
-                    Key::W | Key::Comma => keys_pressed[0] = true,
-                    Key::A => keys_pressed[1] = true,
-                    Key::S | Key::O => keys_pressed[2] = true,
-                    Key::D | Key::E => keys_pressed[3] = true,
+                    Key::W | Key::Comma => input.set_up_pressed(),
+                    Key::A => input.set_left_pressed(),
+                    Key::S | Key::O => input.set_down_pressed(),
+                    Key::D | Key::E => input.set_right_pressed(),
                     _ => (),
                 }
             }
@@ -118,7 +121,7 @@ fn main() -> Result<()> {
         {
             // Update the camera
             let mut camera = world.write_resource::<Camera>();
-            camera.handle_keyboard(&keys_pressed);
+            camera.handle_input(&world.read_resource::<InputState>());
             camera.update(world.read_resource::<DeltaTime>().to_seconds());
         }
 
