@@ -1,4 +1,8 @@
-use crate::{physics::*, sprite::generate, user::MovesWithCamera};
+use crate::{
+    physics::*,
+    sprite::generate,
+    user::{MovesWithCamera, RotatesWithCamera},
+};
 use anyhow::Result;
 use rand::prelude::*;
 use specs::{prelude::*, Component, DenseVecStorage};
@@ -54,8 +58,10 @@ pub fn spawn_small_rockets(
                 rng.gen_range(-10.0, 10.0),
                 rng.gen_range(-10.0, 10.0),
             ))
+            .with(Rotation(0.0))
             .with(RotationFollowsVelocity)
             .with(MovesWithCamera)
+            .with(RotatesWithCamera)
             .with(Sprite::new(sprite))
             .build();
     }
@@ -109,11 +115,11 @@ pub fn spawn_rocket(world: &mut World, x: usize, y: usize) -> Result<()> {
         .create_entity()
         .with(Rocket::default())
         .with(Position::new(x as f64, y as f64))
+        .with(Rotation(0.0))
         .with(CartesianVelocity {
             speed: 0.0,
             rot: 0.0,
         })
-        .with(RotationFollowsVelocity)
         .with(Sprite::new(sprite))
         .build();
 

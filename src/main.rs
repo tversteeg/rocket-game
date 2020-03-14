@@ -25,11 +25,13 @@ fn main() -> Result<()> {
     // Load the game components
     world.register::<Position>();
     world.register::<Velocity>();
+    world.register::<Rotation>();
     world.register::<CartesianVelocity>();
     world.register::<RotationFollowsVelocity>();
     world.register::<Asteroid>();
     world.register::<Rocket>();
     world.register::<MovesWithCamera>();
+    world.register::<RotatesWithCamera>();
 
     // Load the sprite rendering component
     world.register::<Sprite>();
@@ -68,8 +70,13 @@ fn main() -> Result<()> {
             &["cartesian_velocity"],
         )
         .with(
+            SpriteRotationSystem,
+            "sprite_rotation",
+            &["rotation", "cartesian_rotation"],
+        )
+        .with(
             SpritePositionSystem,
-            "spritepos",
+            "sprite_position",
             &["velocity", "cartesian_velocity"],
         )
         .with_thread_local(RenderSystem)

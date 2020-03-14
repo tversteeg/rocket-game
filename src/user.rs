@@ -1,4 +1,4 @@
-use crate::physics::Position;
+use crate::physics::{Position, Rotation};
 use specs::{Component, DenseVecStorage};
 
 type Vec2 = vek::Vec2<f64>;
@@ -26,25 +26,38 @@ pub struct Camera {
 impl Camera {
     /// Instantiate a new camera object.
     pub fn new(pivot: Vec2) -> Self {
-        Self {
+        let mut c = Self {
             pivot,
             ..Default::default()
-        }
+        };
+
+        c.rotate(0.0);
+
+        c
     }
 
     /// Map normal coordinates to relative camera coordinates.
-    pub fn map(&self, pos: &Position) -> Vec2 {
-        let dx = pos.x - self.pos.x;
-        let dy = pos.y - self.pos.y;
+    pub fn map_pos(&self, pos: &Position) -> Vec2 {
+        let delta = pos.0 - self.pos - self.pivot;
 
-        Vec2::new(self.rot.sin() * dx, self.rot.cos() * dy)
+        let new = Vec2::new(
+            delta.x * self.rot_cos - delta.y * self.rot_sin,
+            delta.x * self.rot_sin + delta.y * self.rot_cos,
+        );
+
+        new + self.pivot
+    }
+
+    /// Map normal rotation with camera rotation.
+    pub fn map_rot(&self, rot: &Rotation) -> f64 {
+        rot.0 + self.rot
     }
 
     /// Update the position according to the velocity and speed.
     pub fn update(&mut self, dt: f64) {
         self.pos += Vec2::new(
-            self.rot.sin() * self.speed * dt,
-            self.rot.cos() * self.speed * dt,
+            self.rot_sin * self.speed * dt,
+            self.rot_cos * self.speed * dt,
         );
     }
 
@@ -83,3 +96,6 @@ impl Camera {
 
 #[derive(Component, Debug, Default)]
 pub struct MovesWithCamera;
+
+#[derive(Component, Debug, Default)]
+pub struct RotatesWithCamera;

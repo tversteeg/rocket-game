@@ -1,5 +1,8 @@
-use crate::physics::*;
-use crate::sprite::generate;
+use crate::{
+    physics::*,
+    sprite::generate,
+    user::{MovesWithCamera, RotatesWithCamera},
+};
 use anyhow::Result;
 use rand::prelude::*;
 use specs::{prelude::*, Component, DenseVecStorage};
@@ -59,6 +62,8 @@ pub fn spawn_asteroids(
                 rng.gen_range(-10.0, 10.0),
                 rng.gen_range(-10.0, 10.0),
             ))
+            .with(MovesWithCamera)
+            .with(RotatesWithCamera)
             .with(Sprite::new(sprite))
             .build();
     }
