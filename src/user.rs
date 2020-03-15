@@ -4,10 +4,12 @@ use std::f64::consts::PI;
 
 type Vec2 = vek::Vec2<f64>;
 
-const SPEED: f64 = 0.5;
-const SPEED_BOOST: f64 = 30.0;
-const MAX_SPEED: f64 = 50.0;
-const ROTATION: f64 = 0.02;
+const_tweaker::tweak! {
+    SPEED: f64 = 0.5;
+    SPEED_BOOST: f64 = 30.0;
+    MAX_SPEED: f64 = 50.0;
+    ROTATION: f64 = 0.02;
+}
 
 #[derive(Debug, Default)]
 pub struct InputState {
@@ -139,22 +141,22 @@ impl Camera {
         if input.up_pressed() {
             // W
             // A bit of boost
-            self.speed = (self.speed + SPEED).min(MAX_SPEED + SPEED_BOOST);
+            self.speed = (self.speed + *SPEED).min(*MAX_SPEED + *SPEED_BOOST);
         } else {
             // Remove the boost when the button isn't pressed down
-            self.speed = self.speed.min(MAX_SPEED);
+            self.speed = self.speed.min(*MAX_SPEED);
         }
         if input.down_pressed() {
             // S
-            self.speed = (self.speed - SPEED).max(0.0);
+            self.speed = (self.speed - *SPEED).max(0.0);
         }
         if input.left_pressed() {
             // A
-            self.rotate(ROTATION);
+            self.rotate(*ROTATION);
         }
         if input.right_pressed() {
             // D
-            self.rotate(-ROTATION);
+            self.rotate(-*ROTATION);
         }
     }
 

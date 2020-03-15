@@ -19,6 +19,10 @@ const WIDTH: usize = 600;
 const HEIGHT: usize = 400;
 
 fn main() -> Result<()> {
+    // Add the tweaking gui
+    #[cfg(debug_assertions)]
+    const_tweaker::run().expect("Could not run server");
+
     // Setup the ECS system
     let mut world = World::new();
 
