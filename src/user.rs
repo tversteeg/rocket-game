@@ -4,12 +4,14 @@ use std::f64::consts::PI;
 
 type Vec2 = vek::Vec2<f64>;
 
-const_tweaker::tweak! {
-    SPEED: f64 = 0.5;
-    SPEED_BOOST: f64 = 30.0;
-    MAX_SPEED: f64 = 50.0;
-    ROTATION: f64 = 0.02;
-}
+#[const_tweaker::tweak]
+const SPEED: f64 = 0.5;
+#[const_tweaker::tweak(min = 0.0, max = 100.0, step = 1.0)]
+const SPEED_BOOST: f64 = 30.0;
+#[const_tweaker::tweak(min = 0.0, max = 100.0, step = 1.0)]
+const MAX_SPEED: f64 = 50.0;
+#[const_tweaker::tweak(min = 0.0, max = 0.2, step = 0.01)]
+const ROTATION: f64 = 0.02;
 
 #[derive(Debug, Default)]
 pub struct InputState {
