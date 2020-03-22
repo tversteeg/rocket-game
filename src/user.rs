@@ -10,8 +10,10 @@ const SPEED: f64 = 0.5;
 const SPEED_BOOST: f64 = 30.0;
 #[const_tweaker::tweak(min = 0.0, max = 100.0, step = 1.0)]
 const MAX_SPEED: f64 = 50.0;
-#[const_tweaker::tweak(min = 0.0, max = 0.2, step = 0.01)]
-const ROTATION: f64 = 0.02;
+#[const_tweaker::tweak(min = 0.0, max = 0.05, step = 0.001)]
+const ROTATION_SPEED: f64 = 0.02;
+#[const_tweaker::tweak(min = 0.0, max = 0.05, step = 0.001)]
+const ROTATION_DIRECTION: f64 = PI / 2.0;
 
 #[derive(Debug, Default)]
 pub struct InputState {
@@ -89,8 +91,6 @@ pub struct Camera {
     pivot: Vec2,
     /// Relative rotation.
     rot: f64,
-    /// Offset that's always added to the rotation.
-    rot_offset: f64,
     /// Calculated sin that only needs to be calculated once.
     rot_sin: f64,
     /// Calculated cos that only needs to be calculated once.
@@ -103,7 +103,6 @@ impl Camera {
     /// Instantiate a new camera object.
     pub fn new(pivot: Vec2) -> Self {
         let mut c = Self {
-            rot_offset: PI / 4.0,
             pivot,
             ..Default::default()
         };
@@ -127,14 +126,14 @@ impl Camera {
 
     /// Map normal rotation with camera rotation.
     pub fn map_rot(&self, rot: &Rotation) -> f64 {
-        rot.0 + self.rot + self.rot_offset
+        rot.0 + self.rot
     }
 
     /// Update the position according to the velocity and speed.
     pub fn update(&mut self, dt: f64) {
         self.pos += Vec2::new(
-            self.rot_sin * self.speed * dt,
-            self.rot_cos * self.speed * dt,
+            (self.rot + *ROTATION_DIRECTION).sin() * self.speed * dt,
+            (self.rot + *ROTATION_DIRECTION).cos() * self.speed * dt,
         );
     }
 
@@ -154,11 +153,11 @@ impl Camera {
         }
         if input.left_pressed() {
             // A
-            self.rotate(*ROTATION);
+            self.rotate(*ROTATION_SPEED);
         }
         if input.right_pressed() {
             // D
-            self.rotate(-*ROTATION);
+            self.rotate(-*ROTATION_SPEED);
         }
     }
 
@@ -167,9 +166,8 @@ impl Camera {
         self.rot += offset;
 
         // Only calculate the angles once
-        let with_offset = self.rot + self.rot_offset;
-        self.rot_sin = with_offset.sin();
-        self.rot_cos = with_offset.cos();
+        self.rot_sin = self.rot.sin();
+        self.rot_cos = self.rot.cos();
     }
 }
 

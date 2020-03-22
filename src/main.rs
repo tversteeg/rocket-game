@@ -15,13 +15,10 @@ use std::time::Duration;
 
 type Vec2 = vek::Vec2<f64>;
 
-const WIDTH: usize = 600;
-const HEIGHT: usize = 400;
+const WIDTH: usize = 1200;
+const HEIGHT: usize = 800;
 
 fn main() -> Result<()> {
-    // Add the tweaking gui
-    const_tweaker::run().expect("Could not run server");
-
     // Setup the ECS system
     let mut world = World::new();
 
@@ -89,13 +86,16 @@ fn main() -> Result<()> {
 
     // Setup the window
     let window_options = minifb::WindowOptions {
-        scale: minifb::Scale::X2,
+        scale: minifb::Scale::X1,
         ..minifb::WindowOptions::default()
     };
     let mut window = minifb::Window::new("Rocket Game", WIDTH, HEIGHT, window_options)?;
 
     // Limit to max ~60 fps update rate
     window.limit_update_rate(Some(Duration::from_micros(16600)));
+
+    // Add the tweaking gui
+    const_tweaker::run().expect("Could not run server");
 
     while window.is_open() && !window.is_key_down(minifb::Key::Escape) {
         {
@@ -104,19 +104,21 @@ fn main() -> Result<()> {
             buffer.clear(0);
         }
 
-        // Get which keys are pressed
-        if let Some(keys) = window.get_keys() {
+        {
             let mut input = world.write_resource::<InputState>();
             input.reset();
 
-            for t in keys {
-                match t {
-                    // Qwerty or Dvorak
-                    Key::W | Key::Comma => input.set_up_pressed(),
-                    Key::A => input.set_left_pressed(),
-                    Key::S | Key::O => input.set_down_pressed(),
-                    Key::D | Key::E => input.set_right_pressed(),
-                    _ => (),
+            // Get which keys are pressed
+            if let Some(keys) = window.get_keys() {
+                for t in keys {
+                    match t {
+                        // Qwerty or Dvorak
+                        Key::W | Key::Comma => input.set_up_pressed(),
+                        Key::A => input.set_left_pressed(),
+                        Key::S | Key::O => input.set_down_pressed(),
+                        Key::D | Key::E => input.set_right_pressed(),
+                        _ => (),
+                    }
                 }
             }
         }
