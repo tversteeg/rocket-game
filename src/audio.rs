@@ -67,9 +67,8 @@ impl Audio {
     /// Reset the sound.
     pub fn reset(&mut self) {
         let mut generator = self.generator.lock().unwrap();
-        match *generator {
-            Some(ref mut generator) => generator.reset(),
-            None => (),
+        if let Some(ref mut generator) = *generator {
+            generator.reset();
         }
     }
 
