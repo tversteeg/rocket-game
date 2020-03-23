@@ -1,4 +1,7 @@
-use crate::physics::{Position, Rotation};
+use crate::{
+    audio::Audio,
+    physics::{Position, Rotation},
+};
 use specs::{Component, DenseVecStorage};
 use std::f64::consts::PI;
 
@@ -138,11 +141,13 @@ impl Camera {
     }
 
     /// Hande keyboard and mouse input.
-    pub fn handle_input(&mut self, input: &InputState) {
+    pub fn handle_input(&mut self, input: &InputState, audio: &mut Audio) {
         if input.up_pressed() {
             // W
             // A bit of boost
             self.speed = (self.speed + *SPEED).min(*MAX_SPEED + *SPEED_BOOST);
+
+            audio.play_boost(self.speed);
         } else {
             // Remove the boost when the button isn't pressed down
             self.speed = self.speed.min(*MAX_SPEED);

@@ -1,16 +1,15 @@
 mod asteroid;
+mod audio;
 mod physics;
 mod rocket;
 mod sprite;
 mod user;
 
-use crate::{asteroid::*, physics::*, rocket::*, user::*};
-
+use crate::{asteroid::*, audio::Audio, physics::*, rocket::*, user::*};
 use anyhow::Result;
 use minifb::Key;
 use specs::prelude::*;
 use specs_blit::{PixelBuffer, RenderSystem, Sprite};
-
 use std::time::Duration;
 
 type Vec2 = vek::Vec2<f64>;
@@ -51,6 +50,9 @@ fn main() -> Result<()> {
         WIDTH as f64 / 2.0,
         HEIGHT as f64 / 2.0,
     )));
+
+    // Add the audio system
+    world.insert(Audio::new());
 
     // Spawn the initial asteroids
     spawn_asteroids(&mut world, 20, WIDTH, HEIGHT)?;
@@ -94,6 +96,12 @@ fn main() -> Result<()> {
     // Limit to max ~60 fps update rate
     window.limit_update_rate(Some(Duration::from_micros(16600)));
 
+    {
+        // Start the audio
+        let mut audio = world.write_resource::<Audio>();
+        audio.run();
+    }
+
     // Add the tweaking gui
     const_tweaker::run().expect("Could not run server");
 
@@ -126,7 +134,10 @@ fn main() -> Result<()> {
         {
             // Update the camera
             let mut camera = world.write_resource::<Camera>();
-            camera.handle_input(&world.read_resource::<InputState>());
+            camera.handle_input(
+                &world.read_resource::<InputState>(),
+                &mut world.write_resource::<Audio>(),
+            );
             camera.update(world.read_resource::<DeltaTime>().to_seconds());
         }
 

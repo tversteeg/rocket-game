@@ -14,8 +14,8 @@ A small procedurally generated arcade game
 
 ### Linux
 
-To build on Linux you need the `xorg` development libraries and `cmake`:
+To build on Linux you need the `xorg` & `alsa` development libraries and `cmake`:
 
 ```bash
-sudo apt install xorg-dev cmake
+sudo apt install xorg-dev cmake libasound2-dev
 ```
