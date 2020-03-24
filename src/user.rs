@@ -37,17 +37,9 @@ impl InputState {
         }
     }
 
-    /// Set all the keyboard keys to not-pressed.
-    pub fn reset(&mut self) {
-        self.up = false;
-        self.down = false;
-        self.left = false;
-        self.right = false;
-    }
-
     /// Set the up key as pressed.
-    pub fn set_up_pressed(&mut self) {
-        self.up = true;
+    pub fn set_up_state(&mut self, pressed: bool) {
+        self.up = pressed;
     }
 
     /// Get whether the up key is pressed or not.
@@ -56,8 +48,8 @@ impl InputState {
     }
 
     /// Set the down key as pressed.
-    pub fn set_down_pressed(&mut self) {
-        self.down = true;
+    pub fn set_down_state(&mut self, pressed: bool) {
+        self.down = pressed;
     }
 
     /// Get whether the down key is pressed or not.
@@ -66,8 +58,8 @@ impl InputState {
     }
 
     /// Set the left key as pressed.
-    pub fn set_left_pressed(&mut self) {
-        self.left = true;
+    pub fn set_left_state(&mut self, pressed: bool) {
+        self.left = pressed;
     }
 
     /// Get whether the left key is pressed or not.
@@ -76,8 +68,8 @@ impl InputState {
     }
 
     /// Set the right key as pressed.
-    pub fn set_right_pressed(&mut self) {
-        self.right = true;
+    pub fn set_right_state(&mut self, pressed: bool) {
+        self.right = pressed;
     }
 
     /// Get whether the right key is pressed or not.

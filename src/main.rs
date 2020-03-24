@@ -7,10 +7,16 @@ mod user;
 
 use crate::{asteroid::*, audio::Audio, physics::*, rocket::*, user::*};
 use anyhow::Result;
-use minifb::Key;
+use pixels::{wgpu::Surface, Pixels, SurfaceTexture};
+use safe_transmute::to_bytes;
 use specs::prelude::*;
 use specs_blit::{PixelBuffer, RenderSystem, Sprite};
-use std::time::Duration;
+use winit::{
+    dpi::LogicalSize,
+    event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent},
+    event_loop::{ControlFlow, EventLoop},
+    window::WindowBuilder,
+};
 
 type Vec2 = vek::Vec2<f64>;
 
@@ -87,14 +93,22 @@ fn main() -> Result<()> {
         .build();
 
     // Setup the window
-    let window_options = minifb::WindowOptions {
-        scale: minifb::Scale::X1,
-        ..minifb::WindowOptions::default()
+    let event_loop = EventLoop::new();
+    let window = {
+        let size = LogicalSize::new(WIDTH as f64, HEIGHT as f64);
+        WindowBuilder::new()
+            .with_title("Rocket Game")
+            .with_inner_size(size)
+            .with_min_inner_size(size)
+            .build(&event_loop)
+            .unwrap()
     };
-    let mut window = minifb::Window::new("Rocket Game", WIDTH, HEIGHT, window_options)?;
 
-    // Limit to max ~60 fps update rate
-    window.limit_update_rate(Some(Duration::from_micros(16600)));
+    let mut pixels = {
+        let surface = Surface::create(&window);
+        let surface_texture = SurfaceTexture::new(WIDTH as u32, HEIGHT as u32, surface);
+        Pixels::new(WIDTH as u32, HEIGHT as u32, surface_texture)?
+    };
 
     {
         // Start the audio
@@ -105,53 +119,100 @@ fn main() -> Result<()> {
     // Add the tweaking gui
     const_tweaker::run().expect("Could not run server");
 
-    while window.is_open() && !window.is_key_down(minifb::Key::Escape) {
-        {
-            // Clear the buffer
-            let mut buffer = world.write_resource::<PixelBuffer>();
-            buffer.clear(0);
-        }
+    event_loop.run(move |event, _, control_flow| {
+        // ControlFlow::Poll continuously runs the event loop, even if the OS hasn't
+        // dispatched any events. This is ideal for games and similar applications.
+        *control_flow = ControlFlow::Poll;
 
-        {
-            let mut input = world.write_resource::<InputState>();
-            input.reset();
+        match event {
+            Event::WindowEvent {
+                event: WindowEvent::CloseRequested,
+                ..
+            } => {
+                // Close button was pressed
+                *control_flow = ControlFlow::Exit
+            }
+            Event::MainEventsCleared => {
+                // Application update code
 
-            // Get which keys are pressed
-            if let Some(keys) = window.get_keys() {
-                for t in keys {
-                    match t {
-                        // Qwerty or Dvorak
-                        Key::W | Key::Comma => input.set_up_pressed(),
-                        Key::A => input.set_left_pressed(),
-                        Key::S | Key::O => input.set_down_pressed(),
-                        Key::D | Key::E => input.set_right_pressed(),
+                {
+                    // Clear the buffer
+                    let mut buffer = world.write_resource::<PixelBuffer>();
+                    buffer.clear(0);
+                }
+
+                {
+                    // Update the camera
+                    let mut camera = world.write_resource::<Camera>();
+                    camera.handle_input(
+                        &world.read_resource::<InputState>(),
+                        &mut world.write_resource::<Audio>(),
+                    );
+                    camera.update(world.read_resource::<DeltaTime>().to_seconds());
+                }
+
+                // Update specs
+                dispatcher.dispatch(&world);
+
+                // Add/remove entities added in dispatch through `LazyUpdate`
+                world.maintain();
+
+                // Queue a RedrawRequested event.
+                window.request_redraw();
+            }
+            Event::RedrawRequested(_) => {
+                // Get the pixel buffer resource to render it
+                let buffer = world.read_resource::<PixelBuffer>();
+
+                // Copy the source buffer into the pixels array
+                // Source is u32, make 4x u8 from it
+                let transmuted = to_bytes::transmute_to_bytes(buffer.pixels());
+                pixels.get_frame().copy_from_slice(transmuted);
+
+                // Draw the pixels
+                pixels.render();
+            }
+            Event::WindowEvent {
+                event: WindowEvent::Resized(new_size),
+                ..
+            } => {
+                pixels.resize(new_size.width, new_size.height);
+            }
+            Event::WindowEvent {
+                event: WindowEvent::KeyboardInput { input, .. },
+                ..
+            } => {
+                // Handle keyboard input
+
+                // Match WASD & Dvorak (Comma, A, O, E)
+                match input {
+                    KeyboardInput {
+                        virtual_keycode: Some(virtual_code),
+                        state,
+                        ..
+                    } => match virtual_code {
+                        VirtualKeyCode::W | VirtualKeyCode::Comma => {
+                            let mut input_state = world.write_resource::<InputState>();
+                            input_state.set_up_state(state == ElementState::Pressed);
+                        }
+                        VirtualKeyCode::A => {
+                            let mut input_state = world.write_resource::<InputState>();
+                            input_state.set_left_state(state == ElementState::Pressed);
+                        }
+                        VirtualKeyCode::S | VirtualKeyCode::O => {
+                            let mut input_state = world.write_resource::<InputState>();
+                            input_state.set_down_state(state == ElementState::Pressed);
+                        }
+                        VirtualKeyCode::D | VirtualKeyCode::E => {
+                            let mut input_state = world.write_resource::<InputState>();
+                            input_state.set_right_state(state == ElementState::Pressed);
+                        }
                         _ => (),
-                    }
+                    },
+                    _ => (),
                 }
             }
+            _ => (),
         }
-
-        {
-            // Update the camera
-            let mut camera = world.write_resource::<Camera>();
-            camera.handle_input(
-                &world.read_resource::<InputState>(),
-                &mut world.write_resource::<Audio>(),
-            );
-            camera.update(world.read_resource::<DeltaTime>().to_seconds());
-        }
-
-        // Update specs
-        dispatcher.dispatch(&world);
-
-        // Add/remove entities added in dispatch through `LazyUpdate`
-        world.maintain();
-
-        // Get the pixel buffer resource to render it
-        let buffer = world.read_resource::<PixelBuffer>();
-        // Render the pixel buffer
-        window.update_with_buffer(&buffer.pixels(), buffer.width(), buffer.height())?;
-    }
-
-    Ok(())
+    });
 }
