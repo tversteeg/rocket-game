@@ -70,7 +70,7 @@ pub fn spawn_small_rockets(
 }
 
 pub fn spawn_rocket(world: &mut World, x: usize, y: usize) -> Result<()> {
-    let (width, _height, options) = (
+    let (width, height, options) = (
         11,
         24,
         Options {
@@ -114,7 +114,10 @@ pub fn spawn_rocket(world: &mut World, x: usize, y: usize) -> Result<()> {
     world
         .create_entity()
         .with(Rocket::default())
-        .with(Position::new(x as f64, y as f64))
+        .with(Position::new(
+            (x - width / 2) as f64,
+            (y - height / 2) as f64,
+        ))
         .with(Rotation(0.0))
         .with(CartesianVelocity {
             speed: 0.0,

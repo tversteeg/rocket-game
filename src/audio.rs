@@ -55,6 +55,11 @@ impl Audio {
         self.boost_interval += 1;
     }
 
+    /// Play a laser sound.
+    pub fn play_laser(&mut self) {
+        self.play(Sample::laser(None), 1.0);
+    }
+
     /// Play a sample.
     pub fn play(&mut self, sample: Sample, volume: f32) {
         let mut new_generator = Generator::new(sample);

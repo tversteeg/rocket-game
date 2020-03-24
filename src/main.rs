@@ -1,11 +1,20 @@
 mod asteroid;
 mod audio;
 mod physics;
+mod projectile;
 mod rocket;
 mod sprite;
 mod user;
 
-use crate::{asteroid::*, audio::Audio, physics::*, rocket::*, user::*};
+use crate::{
+    asteroid::*,
+    audio::Audio,
+    physics::*,
+    projectile::{Laser, Lifetime, LifetimeSystem},
+    rocket::*,
+    sprite::{Line, LineSystem},
+    user::*,
+};
 use anyhow::Result;
 use pixels::{wgpu::Surface, Pixels, SurfaceTexture};
 use safe_transmute::to_bytes;
@@ -33,10 +42,13 @@ fn main() -> Result<()> {
     world.register::<Rotation>();
     world.register::<CartesianVelocity>();
     world.register::<RotationFollowsVelocity>();
+    world.register::<Lifetime>();
     world.register::<Asteroid>();
+    world.register::<Laser>();
     world.register::<Rocket>();
     world.register::<MovesWithCamera>();
     world.register::<RotatesWithCamera>();
+    world.register::<Line>();
 
     // Load the sprite rendering component
     world.register::<Sprite>();
@@ -71,6 +83,8 @@ fn main() -> Result<()> {
 
     // Setup the dispatcher with the blit system
     let mut dispatcher = DispatcherBuilder::new()
+        .with(LineSystem, "line", &[])
+        .with(LifetimeSystem, "lifetime", &[])
         .with(CartesianVelocitySystem, "cartesian_velocity", &[])
         .with(VelocitySystem, "velocity", &[])
         .with(RotationSystem, "rotation", &["velocity"])
@@ -185,12 +199,13 @@ fn main() -> Result<()> {
                 // Handle keyboard input
 
                 // Match WASD & Dvorak (Comma, A, O, E)
-                match input {
-                    KeyboardInput {
-                        virtual_keycode: Some(virtual_code),
-                        state,
-                        ..
-                    } => match virtual_code {
+                if let KeyboardInput {
+                    virtual_keycode: Some(virtual_code),
+                    state,
+                    ..
+                } = input
+                {
+                    match virtual_code {
                         VirtualKeyCode::W | VirtualKeyCode::Comma => {
                             let mut input_state = world.write_resource::<InputState>();
                             input_state.set_up_state(state == ElementState::Pressed);
@@ -207,9 +222,18 @@ fn main() -> Result<()> {
                             let mut input_state = world.write_resource::<InputState>();
                             input_state.set_right_state(state == ElementState::Pressed);
                         }
+                        VirtualKeyCode::Space => {
+                            if state == ElementState::Pressed {
+                                projectile::shoot_laser(
+                                    &mut world,
+                                    &Vec2::new(WIDTH as f64 / 2.0, HEIGHT as f64 / 2.0),
+                                    90.0,
+                                    500.0,
+                                );
+                            }
+                        }
                         _ => (),
-                    },
-                    _ => (),
+                    }
                 }
             }
             _ => (),
