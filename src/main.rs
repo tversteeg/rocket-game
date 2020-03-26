@@ -10,7 +10,7 @@ use crate::{
     asteroid::*,
     audio::Audio,
     physics::*,
-    projectile::{Laser, Lifetime, LifetimeSystem},
+    projectile::{Laser, LaserLifetimeSystem, Lifetime, LifetimeSystem},
     rocket::*,
     sprite::{Line, LineSystem},
     user::*,
@@ -83,8 +83,9 @@ fn main() -> Result<()> {
 
     // Setup the dispatcher with the blit system
     let mut dispatcher = DispatcherBuilder::new()
-        .with(LineSystem, "line", &[])
         .with(LifetimeSystem, "lifetime", &[])
+        .with(LaserLifetimeSystem, "laser_lifetime", &[])
+        .with(LineSystem, "line", &["laser_lifetime"])
         .with(CartesianVelocitySystem, "cartesian_velocity", &[])
         .with(VelocitySystem, "velocity", &[])
         .with(RotationSystem, "rotation", &["velocity"])
