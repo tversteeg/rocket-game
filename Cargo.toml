@@ -29,6 +29,6 @@ sfxr = "0.1.4"
 specs = { version = "0.16.1", features = ["specs-derive"] }
 specs-blit = "0.3.3"
 sprite-gen = "0.1.9"
-vek = "0.9.12"
+vek = "0.10.0"
 winit = "0.22.0"
 line_drawing = "0.8.0"
