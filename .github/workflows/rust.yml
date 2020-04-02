@@ -107,6 +107,10 @@ jobs:
         with:
           dotnet-version: "2.2.402"
 
+      - name: Install dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y xorg-dev libasound2-dev
+
       # Run the ignored tests that expect the above setup
       - name: Run all tests
         uses: actions-rs/cargo@v1
@@ -146,9 +150,9 @@ jobs:
           toolchain: stable
           override: true
           target: ${{ matrix.target }}
-        
+
       - name: Install dependencies
-        if: matrix.os == 'ubuntu'
+        if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install -y xorg-dev libasound2-dev
 
       - name: Build target
