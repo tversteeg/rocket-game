@@ -18,17 +18,17 @@ travis-ci = {repository = "tversteeg/rocket-game"}
 
 [dependencies]
 anyhow = "1.0.28"
-const-tweaker = "0.2.5"
+const-tweaker = "0.3.1"
 cpal = "0.11.0"
 derive_deref = "1.1.0"
 pixels = "0.0.2"
 rand = "0.7.3"
 rotsprite = "0.1.3"
 safe-transmute = "0.11.0-rc.2"
-usfx = "0.1.0"
+usfx = "0.1.2"
 specs = { version = "0.16.1", features = ["specs-derive"] }
 specs-blit = "0.3.3"
 sprite-gen = "0.1.9"
-vek = "0.10.0"
+vek = "0.10.1"
 winit = "0.22.0"
 line_drawing = "0.8.0"
