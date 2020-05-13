@@ -29,6 +29,6 @@ usfx = "0.1.2"
 specs = { version = "0.16.1", features = ["specs-derive"] }
 specs-blit = "0.4.3"
 sprite-gen = "0.1.9"
-vek = "0.10.1"
+vek = "0.11.0"
 winit = "0.22.0"
 line_drawing = "0.8.0"
